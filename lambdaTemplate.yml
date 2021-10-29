@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: lambda-CF-Template
+Parameters:
+  LambdaFunctionName:
+    Type: String
+    Default: test4dFunction-Lambda
+  PipelineBucket:
+    Type: String
+    Default: test4drepo
+
+Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    DependsOn: 
+      - LambdaExecutionRole
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Handler: vlm-splitter.lambda_handler
+      Runtime: python3.7
+      CodeUri: 
+        Bucket: !Ref PipelineBucket
+        Key: code.zip
+      Environment:
+        Variables:
+          KEEP_VERSIONS: 3
+      Role:
+        Fn::GetAtt:
+          - LambdaExecutionRole
+          - Arn
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
